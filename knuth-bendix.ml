@@ -74,7 +74,12 @@ module KnuthBendix = struct
     aux (List.hd r) (List.tl r)
                       
   let procedure (r : relations) =
-    let rec aux (r : relations) (e : relations) = match e with
+    let rec aux (r : relations) (e : relations) =
+      Printf.printf "\n\nR :";
+      print_r r;
+      Printf.printf "\nE :";
+      print_r e;
+      match e with
       |(u, v)::q ->
         let u1 = (normal_form u r) and v1 = (normal_form v r) in
         if (u1 = v1) then (aux r q)
@@ -89,6 +94,30 @@ module KnuthBendix = struct
         )
       |[] -> r in
     aux [] r
+
+  let sub_procedure (r : relations) =
+    let rec aux (r : relations) (e : relations) =
+      Printf.printf "\n\nR :";
+      print_r r;
+      Printf.printf "\nE :";
+      print_r e;
+      match e with
+      |(u, v)::q ->
+        if (u = v) then (aux r q)
+        else (
+          let u1 = ref u and v1 = ref v in
+          if (u < v) then (u1 := v;
+                             v1 := u;);
+          let v2 = (normal_form !v1 r) in
+          let new_E, new_r = (reduce_by !u1 v2 q r) in
+          let q2 = normalize_v ((!u1, v2)::new_r) in
+          
+          (aux q2 (new_E@(critical_pairs q2)))
+        )
+      |[] -> r in
+    aux [] r
 end
 
-let pres = KnuthBendix.procedure [("cbc", "bcb"); ("bc","a")]
+let ex1 = KnuthBendix.sub_procedure [("aaaaaa", ""); ("aa", "A")]
+let ex2 = KnuthBendix.sub_procedure [("ab", "A"); ("aa", ""); ("bb",""); ("bab","aba")]
+let pres = KnuthBendix.sub_procedure [("ab", "A"); ("ac", "B"); ("aa", ""); ("bb",""); ("cc",""); ("bab","aba"); ("cbc","bcb"); ("ca","ac"); ("cbac", "bcba")]
